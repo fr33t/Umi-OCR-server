@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Umi-OCR
+Exec=/opt/Umi-OCR-server/start.sh
+Terminal=false
+Type=Application
+StartupWMClass=Umi-OCR
+Comment=Umi-OCR image to text
+Categories=Utility;
