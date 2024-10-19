@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paste and Drag & Drop Image Upload with OCR</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px; /* 两个盒子之间的间距 */
+        }
+
+        #dropArea, #pasteArea {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            width: 300px;
+            height: 200px;
+            text-align: center;
+            line-height: 200px;
+            display: inline-block;
+        }
+
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 600px;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        img {
+            max-width: 100px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="pasteArea">Paste your image here</div>
+        <div id="dropArea">Drag and drop your image here</div>
+    </div>
+
+    <table id="resultsTable">
+        <tr>
+            <th>Image</th>
+            <th>OCR Result</th>
+        </tr>
+    </table>
+
+    <script>
+        let imageCount = 0;
+        const ocrApiUrl = 'http://127.0.0.1:1224/api/ocr'; // OCR API 地址
+
+        // 粘贴图片功能
+        document.getElementById('pasteArea').addEventListener('paste', function (event) {
+            const items = event.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    handleImageUpload(file);
+                }
+            }
+        });
+
+        // 拖拽图片功能
+        const dropArea = document.getElementById('dropArea');
+        dropArea.addEventListener('dragover', (event) => {
+            event.preventDefault();  // 必须阻止默认行为，允许 drop
+        });
+
+        dropArea.addEventListener('drop', (event) => {
+            event.preventDefault();
+            const files = event.dataTransfer.files;
+            if (files.length > 0 && files[0].type.indexOf('image') !== -1) {
+                handleImageUpload(files[0]);
+            }
+        });
+
+        // 处理图片并添加到表格中
+        function handleImageUpload(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                imageCount++; // 增加图片计数
+
+                // 创建图片元素
+                const img = document.createElement('img');
+                img.src = e.target.result;
+
+                // 创建新行
+                const newRow = document.createElement('tr');
+
+                // 创建图片单元格
+                const imgCell = document.createElement('td');
+                imgCell.appendChild(img);
+
+                // 创建 OCR 结果单元格
+                const ocrResultCell = document.createElement('td');
+                ocrResultCell.textContent = "Processing..."; // 初始显示 "Processing..."
+
+                // 将单元格添加到新行
+                newRow.appendChild(imgCell);
+                newRow.appendChild(ocrResultCell);
+
+                // 将新行添加到表格
+                document.getElementById('resultsTable').appendChild(newRow);
+
+                // 调用 OCR API 并处理响应
+                const base64Image = e.target.result.split(',')[1]; // 获取 Base64 部分
+
+                const data = {
+                    base64: base64Image,
+                    options: {
+                        "data.format": "text"
+                    }
+                };
+
+                fetch(ocrApiUrl, {
+                    method: "POST",
+                    body: JSON.stringify(data),
+                    headers: { "Content-Type": "application/json" }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    ocrResultCell.textContent = data.data || "No text found"; // 显示 OCR 结果
+                })
+                .catch(error => {
+                    console.error(error);
+                    ocrResultCell.textContent = "Error";
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+
+</body>
+</html>
