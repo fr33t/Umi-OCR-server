@@ -3,6 +3,11 @@
 ## clone 本项目 到 /opt
 桌面用户可 复制 Umi-OCR.desktop /usr/share/applicaionts
 
+```bash
+chmod +x start.sh
+chmod +x Umi-OCR.desktop
+```
+
 ## 通过Docker 构建服务 
 https://github.com/hiroi-sora/Umi-OCR_runtime_linux/blob/main/README-docker.md
 
