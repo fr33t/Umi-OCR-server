@@ -5,4 +5,5 @@ Terminal=false
 Type=Application
 StartupWMClass=Umi-OCR
 Comment=Umi-OCR image to text
+Icon=/opt/Umi-OCR-server/Umi-OCR_logo_full.png
 Categories=Utility;
